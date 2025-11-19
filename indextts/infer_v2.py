@@ -430,12 +430,22 @@ class IndexTTS2:
             audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
             audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
 
+            # Speaker vectors (loaded once)
             inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
             input_features = inputs["input_features"]
+            print("\nInput features: ", input_features.shape)
+            print(input_features)
+            print("Sample time 0: ", input_features[0][0].shape)
+            print(input_features[0][0])
+            print("\n")
             attention_mask = inputs["attention_mask"]
             input_features = input_features.to(self.device)
             attention_mask = attention_mask.to(self.device)
             spk_cond_emb = self.get_emb(input_features, attention_mask)
+            print("\nspk_cond_emb: ", spk_cond_emb.shape)
+            print(spk_cond_emb)
+            print("\n")
+            #return
 
             _, S_ref = self.semantic_codec.quantize(spk_cond_emb)
             ref_mel = self.mel_fn(audio_22k.to(spk_cond_emb.device).float())
