@@ -432,7 +432,7 @@ class IndexTTS2:
             files = os.listdir(dir_path)
             # Filter out directories, keeping only files
             speakers = [file for file in files if os.path.isfile(os.path.join(dir_path, file))]
-            print("Speakers:", speakers)
+            print("\nSpeakers:", speakers)
             for spk in speakers:
                 spk_audio_prompt = f"voices/Voices_Clipped/{spk}"
                 audio,sr = self._load_and_cut_audio(spk_audio_prompt,2,verbose)
