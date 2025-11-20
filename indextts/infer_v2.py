@@ -463,7 +463,7 @@ class IndexTTS2:
 
             # For testing
             # Grab predicted voice
-            input_features = get_voice_embedding_data.get_input_features('indextts/predictions.csv', speakers, 0)
+            input_features = get_voice_embedding_data.get_input_features('indextts/predictions.csv', speakers, 2)
             print(input_features)
             print("Input features:", input_features.shape)
             
