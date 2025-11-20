@@ -433,6 +433,7 @@ class IndexTTS2:
             # Filter out directories, keeping only files
             speakers = [file for file in files if os.path.isfile(os.path.join(dir_path, file))]
             print("\nSpeakers:", speakers)
+            '''
             for spk in speakers:
                 spk_audio_prompt = f"voices/Voices_Clipped/{spk}"
                 audio,sr = self._load_and_cut_audio(spk_audio_prompt,2,verbose)
@@ -449,14 +450,31 @@ class IndexTTS2:
                 print(input_features[0][0])
                 print("\n")
                 get_voice_embedding_data.transform_to_csv(input_features, 'collected_base_spk_embeddings.csv')
-            #attention_mask = inputs["attention_mask"]
-            #input_features = input_features.to(self.device)
-            #attention_mask = attention_mask.to(self.device)
-            #spk_cond_emb = self.get_emb(input_features, attention_mask)
-            #print("\nspk_cond_emb: ", spk_cond_emb.shape)
-            #print(spk_cond_emb)
-            #print("\n")
             return
+            '''
+            
+            # grab dummy attention
+            spk = speakers[0]
+            spk_audio_prompt = f"voices/Voices_Clipped/{spk}"
+            audio,sr = self._load_and_cut_audio(spk_audio_prompt,2,verbose)
+            audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
+            audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
+            inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
+
+            # For testing
+            # Grab predicted voice
+            input_features = get_voice_embedding_data.get_input_features('indextts/predictions.csv', speakers, 0)
+            print(input_features)
+            print("Input features:", input_features.shape)
+            
+            attention_mask = inputs["attention_mask"]
+            input_features = input_features.to(self.device)
+            attention_mask = attention_mask.to(self.device)
+            spk_cond_emb = self.get_emb(input_features, attention_mask)
+            print("\nspk_cond_emb: ", spk_cond_emb.shape)
+            print(spk_cond_emb)
+            print("\n")
+            #return
 
             _, S_ref = self.semantic_codec.quantize(spk_cond_emb)
             ref_mel = self.mel_fn(audio_22k.to(spk_cond_emb.device).float())
