@@ -426,26 +426,37 @@ class IndexTTS2:
                 self.cache_s2mel_prompt = None
                 self.cache_mel = None
                 torch.cuda.empty_cache()
-            audio,sr = self._load_and_cut_audio(spk_audio_prompt,15,verbose)
-            audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
-            audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
+            import get_voice_embedding_data
+            dir_path = "voices/Voices_Clipped"
+            # Get a list of all files and directories in the specified path
+            files = os.listdir(dir_path)
+            # Filter out directories, keeping only files
+            speakers = [file for file in files if os.path.isfile(os.path.join(dir_path, file))]
+            print("Speakers:", speakers)
+            for spk in speakers:
+                spk_audio_prompt = f"voices/Voices_Clipped/{spk}"
+                audio,sr = self._load_and_cut_audio(spk_audio_prompt,2,verbose)
+                audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
+                audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
 
-            # Speaker vectors (loaded once)
-            inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
-            input_features = inputs["input_features"]
-            print("\nInput features: ", input_features.shape)
-            print(input_features)
-            print("Sample time 0: ", input_features[0][0].shape)
-            print(input_features[0][0])
-            print("\n")
-            attention_mask = inputs["attention_mask"]
-            input_features = input_features.to(self.device)
-            attention_mask = attention_mask.to(self.device)
-            spk_cond_emb = self.get_emb(input_features, attention_mask)
-            print("\nspk_cond_emb: ", spk_cond_emb.shape)
-            print(spk_cond_emb)
-            print("\n")
-            #return
+                # Speaker vectors (loaded once)
+                inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
+                input_features = inputs["input_features"]
+                print("Speaker:", spk)
+                print("\nInput features:", input_features.shape)
+                print(input_features)
+                print("Sample time 0:", input_features[0][0].shape)
+                print(input_features[0][0])
+                print("\n")
+                get_voice_embedding_data.transform_to_csv(input_features, 'collected_base_spk_embeddings.csv')
+            #attention_mask = inputs["attention_mask"]
+            #input_features = input_features.to(self.device)
+            #attention_mask = attention_mask.to(self.device)
+            #spk_cond_emb = self.get_emb(input_features, attention_mask)
+            #print("\nspk_cond_emb: ", spk_cond_emb.shape)
+            #print(spk_cond_emb)
+            #print("\n")
+            return
 
             _, S_ref = self.semantic_codec.quantize(spk_cond_emb)
             ref_mel = self.mel_fn(audio_22k.to(spk_cond_emb.device).float())
