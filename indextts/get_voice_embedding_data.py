@@ -1,4 +1,5 @@
 import os
+import torch
 import pandas as pd
 
 
@@ -31,3 +32,25 @@ def transform_to_csv(spk_cond_emb, file_name='output.csv'):
     else:
         # Create the CSV file with the header
         df.to_csv(file_name, mode='w', header=True, index=False)
+
+# Function to get input features based on the voice name and sequence index
+def get_input_features(df_name, voice_names, voice_index):
+
+    print(f"Getting Predicted Voice for {voice_names[voice_index]}")
+    df = pd.read_csv(df_name)
+    print(f"df:", df)
+    num_features = 160  # Number of features per time step
+    seq_length = 99     # Sequence length (number of timesteps per voice)
+    
+    # Columns corresponding to features
+    feature_cols = [f'T_{i+1}' for i in range(num_features)]
+
+    start = voice_index * seq_length
+    end = start + seq_length
+    print(f"df[{start}:{end}]:", df.iloc[start:end])
+    '''data_chunk = df.iloc[start:end][feature_cols].values  # shape: (99, 160)
+    print(data_chunk)
+    
+    # Add batch dimension and convert to torch tensor
+    input_tensor = torch.tensor(data_chunk, dtype=torch.float32).unsqueeze(0)  # shape: (1, 99, 160)
+    return input_tensor'''
