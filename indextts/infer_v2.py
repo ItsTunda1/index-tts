@@ -453,22 +453,60 @@ class IndexTTS2:
             return
             '''
             
-            # grab dummy attention
-            spk = speakers[0]
+            '''# grab dummy attention
+            spk = speakers[2]
             spk_audio_prompt = f"voices/Voices_Clipped/{spk}"
-            audio,sr = self._load_and_cut_audio(spk_audio_prompt,2,verbose)
+            spk_audio_prompt = "voices/bradley.mp3"
+            audio,sr = self._load_and_cut_audio(spk_audio_prompt,15,verbose)
             audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
             audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
             inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
 
             # For testing
             # Grab predicted voice
-            input_features = get_voice_embedding_data.get_input_features('indextts/predictions.csv', speakers, 2)
-            print(input_features)
-            print("Input features:", input_features.shape)
+            #input_features = get_voice_embedding_data.get_input_features('indextts/predictions.csv', speakers, 2)
+            #testting with a random case
+            #input_features = torch.rand(1, 99, 160)
+            input_features = inputs["input_features"]
             
             attention_mask = inputs["attention_mask"]
             input_features = input_features.to(self.device)
+            attention_mask = attention_mask.to(self.device)
+            spk_cond_emb = self.get_emb(input_features, attention_mask)
+            print("\nspk_cond_emb: ", spk_cond_emb.shape)
+            print(spk_cond_emb)
+            print("\n")
+            #return'''
+
+            # Mixing voices
+            spk_audio_prompt = "voices/techn0.mp3"
+            audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
+            audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
+            audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
+            inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
+            input_features1 = inputs["input_features"]
+            print(input_features1)
+            print("Input features:", input_features1.shape)
+            spk_audio_prompt = "voices/wintersvoice_normal.m4a"
+            audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
+            audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
+            audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
+            inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
+            input_features2 = inputs["input_features"]
+            print(input_features2)
+            print("Input features:", input_features2.shape)
+
+            # Weights for the tensors
+            w_1 = 0.5
+            w_2 = 0.5
+
+            # Compute the weighted mean (tensor-wise operation)
+            weighted_mean = (w_1 * input_features1 + w_2 * input_features2) / (w_1 + w_2)
+            print(weighted_mean)
+            print("Input features:", weighted_mean.shape)
+            
+            attention_mask = inputs["attention_mask"]
+            input_features = weighted_mean.to(self.device)
             attention_mask = attention_mask.to(self.device)
             spk_cond_emb = self.get_emb(input_features, attention_mask)
             print("\nspk_cond_emb: ", spk_cond_emb.shape)
