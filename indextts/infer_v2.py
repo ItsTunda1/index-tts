@@ -479,7 +479,7 @@ class IndexTTS2:
             #return'''
 
             # Mixing voices
-            spk_audio_prompt = "voices/techn0.mp3"
+            spk_audio_prompt = "voices/neil-better.mp3"
             audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
             audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
             audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
