@@ -354,14 +354,13 @@ class IndexTTS2:
               use_emo_text=False, emo_text=None, use_random=False, interval_silence=200,
               weight=None, voice_input_1=None, voice_input_2=None,
               verbose=False, max_text_tokens_per_segment=120, stream_return=False, more_segment_before=0, **generation_kwargs):
-        voice_blend_data = [{"Weight": weight, "voice1": voice_input_1, "voice2": voice_input_2}]    # Condense data for voice blending
         if stream_return:
             return self.infer_generator(
                 spk_audio_prompt, text, output_path,
                 emo_audio_prompt, emo_alpha,
                 emo_vector,
                 use_emo_text, emo_text, use_random, interval_silence,
-                voice_blend_data,
+                weight, voice_input_1, voice_input_2,
                 verbose, max_text_tokens_per_segment, stream_return, more_segment_before, **generation_kwargs
             )
         else:
@@ -371,7 +370,7 @@ class IndexTTS2:
                     emo_audio_prompt, emo_alpha,
                     emo_vector,
                     use_emo_text, emo_text, use_random, interval_silence,
-                    voice_blend_data,
+                    weight, voice_input_1, voice_input_2,
                     verbose, max_text_tokens_per_segment, stream_return, more_segment_before, **generation_kwargs
                 ))[0]
             except IndexError:
@@ -381,8 +380,9 @@ class IndexTTS2:
               emo_audio_prompt=None, emo_alpha=1.0,
               emo_vector=None,
               use_emo_text=False, emo_text=None, use_random=False, interval_silence=200,
-              voice_blend_data=None,
+              weight=None, voice_input_1=None, voice_input_2=None,
               verbose=False, max_text_tokens_per_segment=120, stream_return=False, quick_streaming_tokens=0, **generation_kwargs):
+        voice_blend_data = [{"Weight": weight, "voice1": voice_input_1, "voice2": voice_input_2}]    # Condense data for voice blending
         print(">> starting inference...")
         self._set_gr_progress(0, "starting inference...")
         if verbose:
