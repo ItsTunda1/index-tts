@@ -504,8 +504,9 @@ class IndexTTS2:
                 print("Input features:", input_features2.shape)
 
                 # Weights for the tensors
-                w_1 = voice_blend_data['weight']
-                w_2 = 1 - w_1
+                # 0 is full w1, so I flipped them
+                w_2 = voice_blend_data['weight']
+                w_1 = 1 - w_2
 
                 # Compute the weighted mean (tensor-wise operation)
                 weighted_mean = (w_1 * input_features1 + w_2 * input_features2)
@@ -519,7 +520,7 @@ class IndexTTS2:
                 print("\nspk_cond_emb: ", spk_cond_emb.shape)
                 print(spk_cond_emb)
                 print("\n")
-            return
+            #return
 
             _, S_ref = self.semantic_codec.quantize(spk_cond_emb)
             ref_mel = self.mel_fn(audio_22k.to(spk_cond_emb.device).float())
