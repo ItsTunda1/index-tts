@@ -485,40 +485,40 @@ class IndexTTS2:
 
             # Mixing voices
             if (voice_blend_data != None):
-                print("blend data:", voice_blend_data)
-            spk_audio_prompt = "voices/neil-better.mp3"
-            audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
-            audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
-            audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
-            inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
-            input_features1 = inputs["input_features"]
-            print(input_features1)
-            print("Input features:", input_features1.shape)
-            spk_audio_prompt = "voices/wintersvoice_normal.m4a"
-            audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
-            audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
-            audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
-            inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
-            input_features2 = inputs["input_features"]
-            print(input_features2)
-            print("Input features:", input_features2.shape)
+                #print("blend data:", voice_blend_data)
+                spk_audio_prompt = voice_blend_data['voice_input_1']
+                audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
+                audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
+                audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
+                inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
+                input_features1 = inputs["input_features"]
+                print(input_features1)
+                print("Input features:", input_features1.shape)
+                spk_audio_prompt = voice_blend_data['voice_input_2']
+                audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
+                audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
+                audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
+                inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
+                input_features2 = inputs["input_features"]
+                print(input_features2)
+                print("Input features:", input_features2.shape)
 
-            # Weights for the tensors
-            w_1 = 0.5
-            w_2 = 0.5
+                # Weights for the tensors
+                w_1 = voice_blend_data['weight']
+                w_2 = 1 - w_1
 
-            # Compute the weighted mean (tensor-wise operation)
-            weighted_mean = (w_1 * input_features1 + w_2 * input_features2) / (w_1 + w_2)
-            print(weighted_mean)
-            print("Input features:", weighted_mean.shape)
-            
-            attention_mask = inputs["attention_mask"]
-            input_features = weighted_mean.to(self.device)
-            attention_mask = attention_mask.to(self.device)
-            spk_cond_emb = self.get_emb(input_features, attention_mask)
-            print("\nspk_cond_emb: ", spk_cond_emb.shape)
-            print(spk_cond_emb)
-            print("\n")
+                # Compute the weighted mean (tensor-wise operation)
+                weighted_mean = (w_1 * input_features1 + w_2 * input_features2)
+                print(weighted_mean)
+                print("Input features:", weighted_mean.shape)
+                
+                attention_mask = inputs["attention_mask"]
+                input_features = weighted_mean.to(self.device)
+                attention_mask = attention_mask.to(self.device)
+                spk_cond_emb = self.get_emb(input_features, attention_mask)
+                print("\nspk_cond_emb: ", spk_cond_emb.shape)
+                print(spk_cond_emb)
+                print("\n")
             return
 
             _, S_ref = self.semantic_codec.quantize(spk_cond_emb)
