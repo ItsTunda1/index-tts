@@ -382,7 +382,7 @@ class IndexTTS2:
               use_emo_text=False, emo_text=None, use_random=False, interval_silence=200,
               weight=None, voice_input_1=None, voice_input_2=None,
               verbose=False, max_text_tokens_per_segment=120, stream_return=False, quick_streaming_tokens=0, **generation_kwargs):
-        voice_blend_data = {"Weight": weight, "voice1": voice_input_1, "voice2": voice_input_2}    # Condense data for voice blending
+        voice_blend_data = {"weight": weight, "voice1": voice_input_1, "voice2": voice_input_2}    # Condense data for voice blending
         print(">> starting inference...")
         self._set_gr_progress(0, "starting inference...")
         if verbose:
