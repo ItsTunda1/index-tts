@@ -67,6 +67,7 @@ LANGUAGES = {
 EMO_CHOICES_ALL = [i18n("与音色参考音频相同"),
                 i18n("使用情感参考音频"),
                 i18n("使用情感向量控制"),
+                i18n("Voice Blending"), # I added person mixing
                 i18n("使用情感描述文本控制")]
 EMO_CHOICES_OFFICIAL = EMO_CHOICES_ALL[:-1]  # skip experimental features
 
@@ -113,8 +114,10 @@ def gen_single(emo_control_method,prompt, text,
                emo_ref_path, emo_weight,
                vec1, vec2, vec3, vec4, vec5, vec6, vec7, vec8,
                emo_text,emo_random,
+               voice_blend_factor,
                max_text_tokens_per_segment=120,
                 *args, progress=gr.Progress()):
+    print("blend factor:", voice_blend_factor)
     output_path = None
     if not output_path:
         output_path = os.path.join("outputs", f"spk_{int(time.time())}.wav")
@@ -156,7 +159,8 @@ def gen_single(emo_control_method,prompt, text,
                        output_path=output_path,
                        emo_audio_prompt=emo_ref_path, emo_alpha=emo_weight,
                        emo_vector=vec,
-                       use_emo_text=(emo_control_method==3), emo_text=emo_text,use_random=emo_random,
+                       use_emo_text=(emo_control_method==4), emo_text=emo_text,use_random=emo_random,
+                       voice_blend_factor=float(voice_blend_factor),
                        verbose=cmd_args.verbose,
                        max_text_tokens_per_segment=int(max_text_tokens_per_segment),
                        **kwargs)
@@ -234,6 +238,14 @@ with gr.Blocks(title="IndexTTS Demo") as demo:
                     vec6 = gr.Slider(label=i18n("低落"), minimum=0.0, maximum=1.0, value=0.0, step=0.05)
                     vec7 = gr.Slider(label=i18n("惊喜"), minimum=0.0, maximum=1.0, value=0.0, step=0.05)
                     vec8 = gr.Slider(label=i18n("平静"), minimum=0.0, maximum=1.0, value=0.0, step=0.05)
+
+        # For Voice Blending, conditionally show two voice input sections
+        with gr.Group(visible=False) as voice_blending_group:
+            with gr.Row():
+                voice_input_1 = gr.Audio(label=i18n("Voice 1"), type="filepath", sources=["upload", "microphone"])
+                voice_input_2 = gr.Audio(label=i18n("Voice 2"), type="filepath", sources=["upload", "microphone"])
+            with gr.Row():
+                weight = gr.Slider(label=i18n("Voice 1 - Voice 2"), minimum=0.0, maximum=1.0, value=0.0, step=0.05)
 
         with gr.Group(visible=False) as emo_text_group:
             create_experimental_warning_message()
@@ -354,29 +366,42 @@ with gr.Blocks(title="IndexTTS Demo") as demo:
             }
 
     def on_method_change(emo_control_method):
+        print("Emo Control Method:", emo_control_method)
         if emo_control_method == 1:  # emotion reference audio
             return (gr.update(visible=True),
                     gr.update(visible=False),
                     gr.update(visible=False),
                     gr.update(visible=False),
-                    gr.update(visible=True)
+                    gr.update(visible=True),
+                    gr.update(visible=False)
                     )
         elif emo_control_method == 2:  # emotion vectors
             return (gr.update(visible=False),
                     gr.update(visible=True),
                     gr.update(visible=True),
                     gr.update(visible=False),
+                    gr.update(visible=True),
+                    gr.update(visible=False)
+                    )
+        elif emo_control_method == 3:  # Voice blending
+            return (gr.update(visible=False),
+                    gr.update(visible=False),
+                    gr.update(visible=False),
+                    gr.update(visible=False),
+                    gr.update(visible=False),
                     gr.update(visible=True)
                     )
-        elif emo_control_method == 3:  # emotion text description
+        elif emo_control_method == 4:  # emotion text description
             return (gr.update(visible=False),
                     gr.update(visible=True),
                     gr.update(visible=False),
                     gr.update(visible=True),
-                    gr.update(visible=True)
+                    gr.update(visible=True),
+                    gr.update(visible=False)
                     )
         else:  # 0: same as speaker voice
             return (gr.update(visible=False),
+                    gr.update(visible=False),
                     gr.update(visible=False),
                     gr.update(visible=False),
                     gr.update(visible=False),
@@ -389,7 +414,8 @@ with gr.Blocks(title="IndexTTS Demo") as demo:
                  emotion_randomize_group,
                  emotion_vector_group,
                  emo_text_group,
-                 emo_weight_group]
+                 emo_weight_group,
+                 voice_blending_group]
     )
 
     def on_experimental_change(is_experimental, current_mode_index):
@@ -430,6 +456,7 @@ with gr.Blocks(title="IndexTTS Demo") as demo:
                      inputs=[emo_control_method,prompt_audio, input_text_single, emo_upload, emo_weight,
                             vec1, vec2, vec3, vec4, vec5, vec6, vec7, vec8,
                              emo_text,emo_random,
+                             weight,    # Voice blending
                              max_text_tokens_per_segment,
                              *advanced_params,
                      ],
