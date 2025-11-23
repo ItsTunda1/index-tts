@@ -486,7 +486,7 @@ class IndexTTS2:
             # Mixing voices
             if (voice_blend_data != None):
                 #print("blend data:", voice_blend_data)
-                spk_audio_prompt = voice_blend_data['voice_input_1']
+                spk_audio_prompt = voice_blend_data['voice1']
                 audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
                 audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
                 audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
@@ -494,7 +494,7 @@ class IndexTTS2:
                 input_features1 = inputs["input_features"]
                 print(input_features1)
                 print("Input features:", input_features1.shape)
-                spk_audio_prompt = voice_blend_data['voice_input_2']
+                spk_audio_prompt = voice_blend_data['voice2']
                 audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
                 audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
                 audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
