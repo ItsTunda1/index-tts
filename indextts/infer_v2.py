@@ -492,7 +492,7 @@ class IndexTTS2:
                 audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
                 inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
                 input_features1 = inputs["input_features"]
-                print(input_features1)
+                print("voice 1:", input_features1)
                 print("Input features:", input_features1.shape)
                 spk_audio_prompt = voice_blend_data['voice2']
                 audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
@@ -500,7 +500,7 @@ class IndexTTS2:
                 audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
                 inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
                 input_features2 = inputs["input_features"]
-                print(input_features2)
+                print("voice 2:", input_features2)
                 print("Input features:", input_features2.shape)
 
                 # Weights for the tensors
@@ -510,7 +510,7 @@ class IndexTTS2:
 
                 # Compute the weighted mean (tensor-wise operation)
                 weighted_mean = (w_1 * input_features1 + w_2 * input_features2)
-                print(weighted_mean)
+                print("mixed:", weighted_mean)
                 print("Input features:", weighted_mean.shape)
                 
                 attention_mask = inputs["attention_mask"]
