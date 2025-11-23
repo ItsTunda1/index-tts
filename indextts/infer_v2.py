@@ -352,8 +352,9 @@ class IndexTTS2:
               emo_audio_prompt=None, emo_alpha=1.0,
               emo_vector=None,
               use_emo_text=False, emo_text=None, use_random=False, interval_silence=200,
-              voice_blend_data=None,
+              weight=None, voice_input_1=None, voice_input_2=None,
               verbose=False, max_text_tokens_per_segment=120, stream_return=False, more_segment_before=0, **generation_kwargs):
+        voice_blend_data = [{"Weight": weight, "voice1": voice_input_1, "voice2": voice_input_2}]    # Condense data for voice blending
         if stream_return:
             return self.infer_generator(
                 spk_audio_prompt, text, output_path,

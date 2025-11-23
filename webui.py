@@ -117,7 +117,6 @@ def gen_single(emo_control_method,prompt, text,
                weight, voice_input_1, voice_input_2,
                max_text_tokens_per_segment=120,
                 *args, progress=gr.Progress()):
-    voice_blend_data = [{"Weight": weight, "voice1": voice_input_1, "voice2": voice_input_2}]    # Condense data for voice blending
     output_path = None
     if not output_path:
         output_path = os.path.join("outputs", f"spk_{int(time.time())}.wav")
@@ -160,7 +159,7 @@ def gen_single(emo_control_method,prompt, text,
                        emo_audio_prompt=emo_ref_path, emo_alpha=emo_weight,
                        emo_vector=vec,
                        use_emo_text=(emo_control_method==4), emo_text=emo_text,use_random=emo_random,
-                       voice_blend_data=voice_blend_data,
+                       weight=weight, voice_input_1=voice_input_1, voice_input_2=voice_input_2,
                        verbose=cmd_args.verbose,
                        max_text_tokens_per_segment=int(max_text_tokens_per_segment),
                        **kwargs)
