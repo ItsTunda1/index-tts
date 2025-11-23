@@ -114,10 +114,10 @@ def gen_single(emo_control_method,prompt, text,
                emo_ref_path, emo_weight,
                vec1, vec2, vec3, vec4, vec5, vec6, vec7, vec8,
                emo_text,emo_random,
-               voice_blend_factor,
+               weight, voice_input_1, voice_input_2,
                max_text_tokens_per_segment=120,
                 *args, progress=gr.Progress()):
-    print("blend factor:", voice_blend_factor)
+    voice_blend_data = [{"Weight": weight, "voice1": voice_input_1, "voice2": voice_input_2}]    # Condense data for voice blending
     output_path = None
     if not output_path:
         output_path = os.path.join("outputs", f"spk_{int(time.time())}.wav")
@@ -160,7 +160,7 @@ def gen_single(emo_control_method,prompt, text,
                        emo_audio_prompt=emo_ref_path, emo_alpha=emo_weight,
                        emo_vector=vec,
                        use_emo_text=(emo_control_method==4), emo_text=emo_text,use_random=emo_random,
-                       voice_blend_factor=float(voice_blend_factor),
+                       voice_blend_data=voice_blend_data,
                        verbose=cmd_args.verbose,
                        max_text_tokens_per_segment=int(max_text_tokens_per_segment),
                        **kwargs)
@@ -366,7 +366,7 @@ with gr.Blocks(title="IndexTTS Demo") as demo:
             }
 
     def on_method_change(emo_control_method):
-        print("Emo Control Method:", emo_control_method)
+        #print("Emo Control Method:", emo_control_method)
         if emo_control_method == 1:  # emotion reference audio
             return (gr.update(visible=True),
                     gr.update(visible=False),
@@ -456,7 +456,7 @@ with gr.Blocks(title="IndexTTS Demo") as demo:
                      inputs=[emo_control_method,prompt_audio, input_text_single, emo_upload, emo_weight,
                             vec1, vec2, vec3, vec4, vec5, vec6, vec7, vec8,
                              emo_text,emo_random,
-                             weight,    # Voice blending
+                             weight, voice_input_1, voice_input_2,    # Voice blending
                              max_text_tokens_per_segment,
                              *advanced_params,
                      ],

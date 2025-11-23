@@ -352,7 +352,7 @@ class IndexTTS2:
               emo_audio_prompt=None, emo_alpha=1.0,
               emo_vector=None,
               use_emo_text=False, emo_text=None, use_random=False, interval_silence=200,
-              voice_blend_factor=None,
+              voice_blend_data=None,
               verbose=False, max_text_tokens_per_segment=120, stream_return=False, more_segment_before=0, **generation_kwargs):
         if stream_return:
             return self.infer_generator(
@@ -360,7 +360,7 @@ class IndexTTS2:
                 emo_audio_prompt, emo_alpha,
                 emo_vector,
                 use_emo_text, emo_text, use_random, interval_silence,
-                voice_blend_factor,
+                voice_blend_data,
                 verbose, max_text_tokens_per_segment, stream_return, more_segment_before, **generation_kwargs
             )
         else:
@@ -370,7 +370,7 @@ class IndexTTS2:
                     emo_audio_prompt, emo_alpha,
                     emo_vector,
                     use_emo_text, emo_text, use_random, interval_silence,
-                    voice_blend_factor,
+                    voice_blend_data,
                     verbose, max_text_tokens_per_segment, stream_return, more_segment_before, **generation_kwargs
                 ))[0]
             except IndexError:
@@ -380,7 +380,7 @@ class IndexTTS2:
               emo_audio_prompt=None, emo_alpha=1.0,
               emo_vector=None,
               use_emo_text=False, emo_text=None, use_random=False, interval_silence=200,
-              voice_blend_factor=None,
+              voice_blend_data=None,
               verbose=False, max_text_tokens_per_segment=120, stream_return=False, quick_streaming_tokens=0, **generation_kwargs):
         print(">> starting inference...")
         self._set_gr_progress(0, "starting inference...")
@@ -483,8 +483,8 @@ class IndexTTS2:
             #return'''
 
             # Mixing voices
-            if (voice_blend_factor != None):
-                print("WORKS")
+            if (voice_blend_data != None):
+                print("blend data:", voice_blend_data)
             spk_audio_prompt = "voices/neil-better.mp3"
             audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
             audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
