@@ -431,13 +431,13 @@ class IndexTTS2:
                 self.cache_s2mel_prompt = None
                 self.cache_mel = None
                 torch.cuda.empty_cache()
-            import get_voice_embedding_data
+            '''import get_voice_embedding_data
             dir_path = "voices/Voices_Clipped"
             # Get a list of all files and directories in the specified path
             files = os.listdir(dir_path)
             # Filter out directories, keeping only files
             speakers = [file for file in files if os.path.isfile(os.path.join(dir_path, file))]
-            print("\nSpeakers:", speakers)
+            print("\nSpeakers:", speakers)'''
             '''
             for spk in speakers:
                 spk_audio_prompt = f"voices/Voices_Clipped/{spk}"
@@ -484,7 +484,7 @@ class IndexTTS2:
             #return'''
 
             # Mixing voices
-            if (voice_blend_data != None):
+            if (voice_blend_data['voice1'] != None and voice_blend_data['voice2'] != None):
                 #print("blend data:", voice_blend_data)
                 spk_audio_prompt = voice_blend_data['voice1']
                 audio,sr = self._load_and_cut_audio(spk_audio_prompt,7,verbose)
@@ -521,6 +521,33 @@ class IndexTTS2:
                 print(spk_cond_emb)
                 print("\n")
             #return
+            else:
+                audio,sr = self._load_and_cut_audio(spk_audio_prompt,2,verbose)
+                audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
+                audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
+
+                # Speaker vectors (loaded once)
+                inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
+                input_features = inputs["input_features"]
+                print("\nInput features:", input_features.shape)
+                print(input_features)
+                print("Sample time 0:", input_features[0][0].shape)
+                print(input_features[0][0])
+                print("\n")
+                
+                audio,sr = self._load_and_cut_audio(spk_audio_prompt,15,verbose)
+                audio_22k = torchaudio.transforms.Resample(sr, 22050)(audio)
+                audio_16k = torchaudio.transforms.Resample(sr, 16000)(audio)
+                inputs = self.extract_features(audio_16k, sampling_rate=16000, return_tensors="pt")
+
+                attention_mask = inputs["attention_mask"]
+                attention_mask = attention_mask.to(self.device)
+                input_features = inputs["input_features"]
+                input_features = input_features.to(self.device)
+                spk_cond_emb = self.get_emb(input_features, attention_mask)
+                print("\nspk_cond_emb: ", spk_cond_emb.shape)
+                print(spk_cond_emb)
+                print("\n")
 
             _, S_ref = self.semantic_codec.quantize(spk_cond_emb)
             ref_mel = self.mel_fn(audio_22k.to(spk_cond_emb.device).float())
